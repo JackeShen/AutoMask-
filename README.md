@@ -1,48 +1,97 @@
 # AutoMask — YOLO 自动标注系统
 
-基于 **PyQt5 + ultralytics (YOLO)** 的图形化自动标注工具。加载训练好的 YOLO
-权重（`.pt`），对图片（单张或文件夹）做推理，自动生成标注并保存。
+基于 **PyQt5 + ultralytics (YOLO)** 的图形化自动标注工具：加载训练好的 YOLO 权重（`.pt`），对单张图片或整个文件夹做推理，自动生成检测/分割标注，并支持**人工复核修正**。
 
-> 本程序在 `goal` conda 环境中开发与运行，默认 **CPU 推理**。
+> 在 `goal` conda 环境中开发与运行，默认 **CPU 推理**（纯 CPU 版 torch，无需 GPU）。
 
-## 功能
+## 功能特性
 
-1. **加载模型**：选择 YOLO 权重 `.pt`（可额外用逗号填写类别名覆盖）。
-2. **选择图片**：支持单张图片或整个文件夹（批量）。
-3. **选择标注保存路径**：指定标注文件输出目录。
-4. **运行推理**：单张运行 / 批量运行，预览框选与（分割模型的）掩码。
-5. **标注复核**：打开复核窗口，人工修正/增删检测框与分割多边形（移动、改类、加点删点）。
-6. **导出标注**（可多选）：
-   - YOLO txt（检测：`class cx cy w h`；分割：`class + 归一化多边形`）
-   - Pascal VOC xml
-   - COCO json（批量时汇总为 `annotations.coco.json`）
-   - 可视化图片（带框/标签/掩码）
-   - `classes.txt` / `dataset.yaml`
+- **加载模型**：任意 YOLO 权重 `.pt`（检测 / 分割 / 分类均支持），类别名自动读取，也可手动覆盖
+- **自动标注**：单张运行 / 批量运行，CPU 推理
+- **多格式导出**（可多选）：
+  - YOLO txt —— 检测：`class cx cy w h`；分割：`class x1 y1 x2 y2 …`（归一化多边形）
+  - Pascal VOC xml
+  - COCO json —— 批量时汇总为 `annotations.coco.json`（含 bbox + 多边形）
+  - 可视化图片 —— 叠加框 / 标签 / 置信度 / 分割掩码（透明度可调）
+  - `classes.txt` / `dataset.yaml`
+- **推理参数可调**：置信度阈值、IOU 阈值
+- **标注复核**：打开复核窗口人工修正 —— 移动/缩放检测框、增删目标、拖拽多边形顶点、增删顶点、框选批量改类，保存自动备份 `.bak`
+- **界面**：深色主题、卡片式三栏布局、预览滚轮缩放、手绘图标（无外部资源）
 
-## 运行
+## 环境要求
+
+- Python 3.10（推荐 conda 环境）
+- 依赖见 `requirements_goal.txt`：`ultralytics`、`PyQt5`、`opencv-python`、`numpy`、`PyYAML`
+
+## 安装与启动
+
+方式一（Windows，双击启动，免激活环境）：
+
+```
+双击 run.bat
+```
+
+方式二（命令行）：
 
 ```bash
 conda activate goal
+cd <本目录>
 python main.py
 ```
 
-操作流程：
+## 使用流程
 
-1. 点【加载模型】→ 选 `.pt` 权重（类别名留空则使用模型自带 names）。
-2. 点【选择图片】或【选择文件夹】导入待标注图片。
-3. 点【浏览】选【标注保存路径】。
-4. 勾选需要的导出格式与阈值（置信度 / IOU）。
-5. 【运行当前图片】或【批量运行全部】。
-6. 预览区可滚轮缩放；【保存当前结果】可单独保存当前图。
+1. 点【加载模型】→ 选 YOLO 权重 `.pt`（选完自动加载，状态栏变为绿色"已加载"）
+2. 点【选图片】或【选文件夹】导入待标注图片
+3. 点【保存路径】选标注输出目录
+4. 按需勾选导出格式、调节置信度 / IOU
+5. 【运行当前】或【批量运行】；预览区滚轮缩放
+6. 需要人工修正时，左栏【标注复核】打开复核窗口
+
+## 输出格式说明
+
+- **YOLO txt**：每行一个目标。检测：`class cx cy w h`（归一化中心点+宽高）；分割：`class x1 y1 x2 y2 ...`（归一化多边形顶点，只写多边形不写框）
+- **VOC xml**：标准 Pascal VOC 目标检测格式（`bndbox`）
+- **COCO json**：批量时全部图片汇总一个文件；含 `bbox` 与 `segmentation` 多边形
+- **可视化**：`原图名_vis.jpg`，叠加检测框、类别标签（含置信度）与分割掩码
+
+## 标注复核（review_window）
+
+- 加载图片文件夹 + labels 文件夹（YOLO txt）+ `classes.txt`
+- 模式自动识别：检测（框）/ 分割（多边形）
+- 编辑：拖动移动、四角缩框、右键删多边形顶点、双击边插入顶点、Delete 删除目标
+- 改类：选中目标（可框选多个）后点击右侧类别图例即批量改类
+- 保存：覆盖原 txt（首次自动备份 `.bak`），支持"保存并下一张"
+
+## 打包为独立程序
+
+### Windows
+
+```bash
+conda activate goal
+build.bat
+```
+
+产物：`dist\AutoMask\AutoMask.exe`（普通文件夹版，约 1.3GB，含 torch 依赖），目标机器无需安装 conda/Python。
+
+### macOS
+
+代码可直接运行（`pip install ultralytics pyqt5 opencv-python` 后 `python main.py`）。
+打包需**在 macOS 上**用 PyInstaller 打 `.app`（不支持跨平台交叉编译）：
+
+```bash
+pip install pyinstaller
+pyinstaller --windowed --name AutoMask --collect-all ultralytics --collect-all torch main.py
+```
 
 ## 项目结构
 
 ```
 automask/
 ├── main.py                  # 入口
-├── build.bat               # PyInstaller 打包（CPU 版）
-├── requirements_goal.txt   # 依赖记录
+├── build.bat               # Windows 打包脚本（PyInstaller）
 ├── run.bat                 # 一键启动脚本（免 activate）
+├── requirements_goal.txt   # 依赖记录
 ├── src/
 │   ├── yolo_model.py       # YOLO 模型加载与推理封装（与 UI 解耦）
 │   ├── annotation_io.py    # 标注保存（txt/xml/coco/可视化）
@@ -51,37 +100,12 @@ automask/
 └── README.md
 ```
 
-## 输出格式说明
+## 技术栈
 
-- **YOLO txt**：每行一个目标。检测：`class cx cy w h`（归一化）；
-  分割：`class x1 y1 x2 y2 ...`（归一化多边形顶点）。
-- **VOC xml**：标准 Pascal VOC 目标检测格式。
-- **COCO json**：批量时所有图片汇总到一个文件，含 bbox 与 polygon。
-- **可视化**：`原图名_vis.jpg`，叠加检测框、类别标签（含置信度）与分割掩码。
-
-## 打包为独立 exe
-
-在 `goal` 环境中执行：
-
-```bash
-build.bat
-```
-
-生成的 `dist\AutoMask\AutoMask.exe` 可独立运行，无需 conda 环境。
-
-**缩小体积（可选）**：若所用环境里的 torch 带 CUDA，exe 会很大（2~3GB）。
-本项目的 `goal` 环境为纯 CPU 版 torch（2.x+cpu），直接打包体积约 1.3GB；
-如需进一步缩小，可新建仅含 CPU 版 torch 的干净环境再打包：
-
-```bash
-conda create -n automask_cpu python=3.10 -y
-conda activate automask_cpu
-pip install torch --index-url https://download.pytorch.org/whl/cpu
-pip install ultralytics PyQt5 opencv-python numpy Pillow PyYAML
-# 然后将本仓库拷入该环境，执行 build.bat
-```
+PyQt5 · ultralytics (YOLOv8/11) · OpenCV · NumPy · PyInstaller
 
 ## 备注
 
-- 分割模型（YOLOv8-seg 等）会自动导出多边形标注；检测模型导出框标注。
-- 设备下拉默认 `CPU`；选择 `自动` 会检测 CUDA 可用性，`CUDA:0` 强制用 GPU。
+- 分割模型（YOLO-seg）自动导出多边形标注；检测模型导出框标注
+- 设备下拉默认 `CPU`；`自动` 会检测 CUDA，`CUDA:0` 强制 GPU（需显卡环境）
+- 标注 txt 坐标均为归一化（0~1），与图片尺寸无关
