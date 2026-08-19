@@ -1,4 +1,7 @@
 # AutoMask — YOLO 自动标注系统
+<img width="1913" height="982" alt="8105e5e2c19b8c5e2f7971ca4b5e6e98" src="https://github.com/user-attachments/assets/55c715f0-6700-4c51-9fd3-b89cf2b9b536" />
+<img width="1916" height="985" alt="eeea38ccdfe6b7e86ecc65f3f883ac80" src="https://github.com/user-attachments/assets/606386f1-dd03-48f0-a5af-1382cec7ea21" />
+
 
 基于 **PyQt5 + ultralytics (YOLO)** 的图形化自动标注工具：加载训练好的 YOLO 权重（`.pt`），对单张图片或整个文件夹做推理，自动生成检测/分割标注，并支持**人工复核修正**。
 
