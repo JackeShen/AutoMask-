@@ -17,8 +17,8 @@ pyinstaller ^
   --noconfirm ^
   --collect-all ultralytics ^
   --collect-all torch ^
+  --collect-all numpy ^
   --hidden-import cv2 ^
-  --hidden-import numpy ^
   --hidden-import PIL ^
   --hidden-import yaml ^
   main.py

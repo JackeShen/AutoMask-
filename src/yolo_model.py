@@ -24,6 +24,7 @@ class YoloModel:
         self.task: Optional[str] = None  # 'detect' | 'segment' | 'classify'
         self.device: str = "cpu"
         self._ultralytics_available = None
+        self._ultralytics_error = None
 
     # ------------------------------------------------------------------ #
     def ultralytics_available(self) -> bool:
@@ -31,16 +32,21 @@ class YoloModel:
             try:
                 import ultralytics  # noqa: F401
                 self._ultralytics_available = True
-            except Exception:
+                self._ultralytics_error = None
+            except Exception as e:
                 self._ultralytics_available = False
+                self._ultralytics_error = repr(e)
         return self._ultralytics_available
 
     # ------------------------------------------------------------------ #
     def load(self, weights: str, device: str = "cpu",
              names_override: Optional[List[str]] = None) -> None:
         if not self.ultralytics_available():
+            err = getattr(self, "_ultralytics_error", "未知错误")
             raise ModelLoadError(
-                "未检测到 ultralytics，请在 goal 环境中运行本程序。"
+                "ultralytics 导入失败（打包环境缺少依赖）：\n"
+                f"{err}\n"
+                "提示：请使用更新后的 build.bat（含 --collect-all numpy）重新打包。"
             )
         if not _is_file(weights):
             raise ModelLoadError(f"权重文件不存在: {weights}")
