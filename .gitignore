@@ -1,0 +1,19 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- PyInstaller 打包产物 ----
+build/
+dist/
+*.spec
+
+# ---- 工作区内部数据（不随源码上传）----
+.workbuddy/
+
+# ---- 系统文件 ----
+.DS_Store
+Thumbs.db
+desktop.ini

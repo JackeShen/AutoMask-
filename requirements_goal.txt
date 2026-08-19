@@ -1,0 +1,17 @@
+# AutoMask - YOLO 自动标注 (goal 环境依赖)
+#
+# 这些包在 goal 环境中已经具备；此处仅作记录/复现用。
+# 用 goal 环境运行：
+#     conda activate goal
+#     python main.py
+#
+# 核心依赖：
+ultralytics>=8.0
+PyQt5>=5.15
+opencv-python>=4.0
+numpy>=1.23
+Pillow>=9.0
+PyYAML>=6.0
+
+# 推理默认 CPU；如需 GPU 加速，确保 torch 为对应 CUDA 版本。
+# torch / torchvision 已在 goal 环境中提供。
